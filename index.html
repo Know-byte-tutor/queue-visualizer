@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Queue Visualizer (FIFO / Circular / Deque / Priority)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #0d47a1;
+      margin-bottom: 10px;
+    }
+
+    .settings {
+      margin: 20px 0;
+    }
+
+    .settings input, select {
+      padding: 6px 10px;
+      margin: 5px;
+      font-size: 16px;
+    }
+
+    .queue-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      min-height: 100px;
+      padding: 20px;
+      border: 2px dashed #1565c0;
+      margin-bottom: 20px;
+      background-color: #e1f5fe;
+      border-radius: 10px;
+    }
+
+    .box {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      line-height: 60px;
+      font-weight: bold;
+      color: white;
+      background-color: #00bcd4;
+      border-radius: 8px;
+      transition: all 0.4s ease;
+    }
+
+    .controls button {
+      padding: 10px 15px;
+      margin: 4px;
+      font-size: 14px;
+      background: #1976d2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: #0d47a1;
+    }
+
+    #message {
+      color: red;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🚀 Queue Visualizer</h1>
+
+  <div class="settings">
+    <input type="number" id="maxSize" placeholder="Max Size" min="1" />
+    <select id="queueType">
+      <option value="fifo">FIFO Queue</option>
+      <option value="circular">Circular Queue</option>
+      <option value="deque">Double-Ended Queue</option>
+      <option value="priority">Priority Queue</option>
+    </select>
+    <input type="text" id="valueInput" placeholder="Enter value" />
+  </div>
+
+  <div class="controls">
+    <button onclick="enqueue()">Enqueue ➡️</button>
+    <button onclick="dequeue()">Dequeue ⬅️</button>
+    <button onclick="enqueueFront()">Enqueue Front ⬅️</button>
+    <button onclick="dequeueRear()">Dequeue Rear ➡️</button>
+    <button onclick="resetQueue()">🔄 Reset</button>
+  </div>
+
+  <div id="message"></div>
+
+  <div class="queue-container" id="queueDisplay"></div>
+
+  <script>
+    let queue = [];
+    let max = 5;
+
+    function updateDisplay() {
+      const display = document.getElementById('queueDisplay');
+      display.innerHTML = '';
+      queue.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.textContent = item.value;
+        display.appendChild(box);
+      });
+    }
+
+    function showMessage(msg) {
+      document.getElementById('message').textContent = msg;
+    }
+
+    function getMaxSize() {
+      const val = parseInt(document.getElementById('maxSize').value);
+      if (!isNaN(val) && val > 0) max = val;
+    }
+
+    function enqueue() {
+      getMaxSize();
+      const val = document.getElementById('valueInput').value.trim();
+      const type = document.getElementById('queueType').value;
+      if (!val) return showMessage("Enter a value");
+      if (queue.length >= max) return showMessage("Queue Overflow");
+
+      if (type === 'priority') {
+        queue.push({ value: val, priority: parseInt(val) || 0 });
+        queue.sort((a, b) => a.priority - b.priority);
+      } else {
+        queue.push({ value: val });
+      }
+
+      updateDisplay();
+      showMessage('');
+    }
+
+    function dequeue() {
+      if (queue.length === 0) return showMessage("Queue Underflow");
+      queue.shift();
+      updateDisplay();
+      showMessage('');
+    }
+
+    function enqueueFront() {
+      getMaxSize();
+      const val = document.getElementById('valueInput').value.trim();
+      const type = document.getElementById('queueType').value;
+      if (!val) return showMessage("Enter a value");
+      if (queue.length >= max) return showMessage("Queue Overflow");
+
+      if (type === 'priority') {
+        queue.push({ value: val, priority: parseInt(val) || 0 });
+        queue.sort((a, b) => a.priority - b.priority);
+      } else if (type === 'deque' || type === 'circular') {
+        queue.unshift({ value: val });
+      } else {
+        return showMessage("Front insertion not allowed in FIFO");
+      }
+
+      updateDisplay();
+      showMessage('');
+    }
+
+    function dequeueRear() {
+      const type = document.getElementById('queueType').value;
+      if (queue.length === 0) return showMessage("Queue Underflow");
+
+      if (type === 'deque' || type === 'circular') {
+        queue.pop();
+      } else {
+        return showMessage("Rear removal not allowed in FIFO or Priority");
+      }
+
+      updateDisplay();
+      showMessage('');
+    }
+
+    function resetQueue() {
+      queue = [];
+      updateDisplay();
+      showMessage('');
+    }
+  </script>
+</body>
+</html>
